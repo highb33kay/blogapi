@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 // use sanctum
 use Laravel\Sanctum\HasApiTokens;
@@ -18,6 +19,7 @@ class AuthController extends Controller
     // Register a new user
 	public function register(Request $request)
 	{
+		$id = Str::uuid();
 		// Validate request
 		$validator = Validator::make($request->all(), [
 			'name' => 'required|string',
@@ -34,6 +36,7 @@ class AuthController extends Controller
 
 		// Store a new user
 		$user = new User();
+		$user->id = $id;
 		$user->name = $request->name;
 		$user->email = $request->email;
 
@@ -115,6 +118,7 @@ class AuthController extends Controller
 	// Get an authenticated user
 	public function user(Request $request)
 	{
+		
 		return response()->json([
 			'success' => true,
 			'data' => $request->user(),

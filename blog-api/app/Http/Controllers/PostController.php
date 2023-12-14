@@ -61,6 +61,11 @@ class PostController extends Controller
 		$post->title = $request->title;
 		$post->content = $request->content;
 		$post->published_at = now();
+
+// Associate the post with the authenticated user
+        $user = Auth::user();
+        $post->user()->associate($user);
+
 		$post->save();
 		
 		return response()->json([
@@ -80,55 +85,71 @@ class PostController extends Controller
 
 	// Update a post
 	public function update(Request $request, $id)
-	{
-		// Validate request
-		$validator = Validator::make($request->all(), [
-			'title' => 'required|string',
-			'content' => 'required|string',
-		]);
+    {
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'content' => 'required|string',
+        ]);
 
-		if ($validator->fails()) {
-			return response()->json(['error' => $validator->errors()], 400);
-		}
-		
-		// Update a post
-		$post = Post::find($id);
-		
-		if (!$post) {
-			return response()->json([
-				'success' => false,
-				'message' => 'Post not found',
-			], 400);
-		}
-		
-		$post->title = $request->title;
-		$post->content = $request->content;
-		$post->updated_at = now();
-		$post->save();
-		
-		return response()->json([
-			'success' => true,
-			'data' => $post,
-		], 200);
-	}
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        // Update a post only if the authenticated user is the owner
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post not found',
+            ], 400);
+        }
+
+        // Check if the authenticated user is the owner of the post
+        if ($post->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to update this post',
+            ], 403);
+        }
+
+        $post->title = $request->title;
+        $post->content = $request->content;
+        $post->updated_at = now();
+        $post->save();
+
+        return response()->json([
+            'success' => true,
+            'data' => $post,
+        ], 200);
+    }
 
 	public function destroy($id)
-	{
-		// Delete a post
-		$post = Post::find($id);
-		
-		if (!$post) {
-			return response()->json([
-				'success' => false,
-				'message' => 'Post not found',
-			], 400);
-		}
-		
-		$post->delete();
-		
-		return response()->json([
-			'success' => true,
-			'message' => 'Post deleted successfully',
-		], 204);
-	}
+    {
+        // Delete a post only if the authenticated user is the owner
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post not found',
+            ], 400);
+        }
+
+        // Check if the authenticated user is the owner of the post
+        if ($post->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to delete this post',
+            ], 403);
+        }
+
+        $post->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Post deleted successfully',
+        ], 204);
+    }
 }

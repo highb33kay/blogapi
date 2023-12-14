@@ -18,4 +18,9 @@ class Post extends Model
 		'content',
 		'published_at',
 	];
+
+	public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -5,13 +5,10 @@ FROM richarvey/nginx-php-fpm:latest
 WORKDIR /var/www/html
 
 # Install dependencies
-RUN apt-get update && \
-	apt-get install -y \
+RUN apk --update --no-cache add \
 	libzip-dev \
 	unzip && \
-	docker-php-ext-install zip pdo_mysql && \
-	apt-get clean && \
-	rm -rf /var/lib/apt/lists/*
+	docker-php-ext-install zip pdo_mysql
 
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -36,4 +33,4 @@ RUN composer dump-autoload --optimize
 # EXPOSE directive is optional as the default Nginx configuration should already expose port 80
 
 # Cleanup development packages
-RUN apt-get purge -y --auto-remove
+RUN apk del .build-deps

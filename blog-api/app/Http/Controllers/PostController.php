@@ -41,14 +41,13 @@ class PostController extends Controller
 
 	public function store(Request $request)
 	{
-		// Validate request
+		
+		try {
+			// Validate request
         $validator = Validator::make($request->all(), [
             'title' => 'required|string',
             'content' => 'required|string',
         ]);
-
-		// print hello to the console
-		print("hello");
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
@@ -60,11 +59,22 @@ class PostController extends Controller
 		$post->content = $request->content;
 		$post->published_at = $request->published_at;
 		$post->save();
+
+// 
 		
 		return response()->json([
 			'success' => true,
 			'data' => $post,
+			'message' => 'Post created successfully',
 		], 200);
+		} catch (\Exception $e) {
+			//throw $th;
+			return response()->json([
+				'success' => false,
+				'message' => $e->getMessage(),
+			], 400);
+		}
+		
 	}
 
 	public function update(Request $request, $id)

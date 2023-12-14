@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -41,6 +42,7 @@ class PostController extends Controller
 
 	public function store(Request $request)
 	{
+		$postId = Str::uuid();
 		
 		try {
 			// Validate request
@@ -55,12 +57,11 @@ class PostController extends Controller
 		
 		// Store a new post
 		$post = new Post();
+		$post->id = $postId;
 		$post->title = $request->title;
 		$post->content = $request->content;
-		$post->published_at = $request->published_at;
+		$post->published_at = now();
 		$post->save();
-
-// 
 		
 		return response()->json([
 			'success' => true,
@@ -77,6 +78,7 @@ class PostController extends Controller
 		
 	}
 
+	// Update a post
 	public function update(Request $request, $id)
 	{
 		// Validate request
@@ -101,7 +103,7 @@ class PostController extends Controller
 		
 		$post->title = $request->title;
 		$post->content = $request->content;
-		$post->published_at = $request->published_at;
+		$post->updated_at = now();
 		$post->save();
 		
 		return response()->json([
@@ -127,6 +129,6 @@ class PostController extends Controller
 		return response()->json([
 			'success' => true,
 			'message' => 'Post deleted successfully',
-		], 200);
+		], 204);
 	}
 }

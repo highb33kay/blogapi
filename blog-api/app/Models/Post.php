@@ -9,6 +9,9 @@ class Post extends Model
 {
     use HasFactory;
 
+	protected $keyType = 'uuid';
+    public $incrementing = false;
+
 	// post model
 	protected $fillable = [
 		'title',

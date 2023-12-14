@@ -9,20 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::table('posts', function (Blueprint $table) {
-            //
-        });
-    }
+public function up()
+{
+    Schema::table('posts', function (Blueprint $table) {
+        $table->uuid('id')->default(DB::raw('UUID()'))->change();
+    });
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('posts', function (Blueprint $table) {
-            //
-        });
-    }
+public function down()
+{
+    Schema::table('posts', function (Blueprint $table) {
+        $table->id()->change();
+    });
+}
 };

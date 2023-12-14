@@ -1,36 +1,20 @@
-# Use the official PHP image as the base image
-FROM richarvey/nginx-php-fpm:latest
+FROM richarvey/nginx-php-fpm:1.9.1
 
-# Set the working directory in the container
-WORKDIR /var/www/html
+COPY . .
 
-# Install dependencies
-RUN apk --update --no-cache add \
-	libzip-dev \
-	unzip && \
-	docker-php-ext-install zip pdo_mysql
+# Image config
+ENV SKIP_COMPOSER 1
+ENV WEBROOT /var/www/html/public
+ENV PHP_ERRORS_STDERR 1
+ENV RUN_SCRIPTS 1
+ENV REAL_IP_HEADER 1
 
-# Install Composer globally
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Laravel config
+ENV APP_ENV production
+ENV APP_DEBUG false
+ENV LOG_CHANNEL stderr
 
-# Copy the Composer files for better caching
-COPY composer.json composer.lock /var/www/html/
+# Allow composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER 1
 
-# Install application dependencies without dev dependencies
-RUN composer install --no-scripts --no-autoloader --no-dev
-
-# Remove unnecessary files
-RUN rm -rf /var/www/html/docker-compose.yml /var/www/html/Dockerfile
-
-# Copy the application files to the container
-COPY . /var/www/html/
-
-# Generate the Composer autoloader
-RUN composer dump-autoload --optimize
-
-# CMD directive is not necessary as richarvey/nginx-php-fpm sets it to run php-fpm
-
-# EXPOSE directive is optional as the default Nginx configuration should already expose port 80
-
-# Cleanup development packages
-RUN apk del .build-deps
+CMD ["/start.sh"]

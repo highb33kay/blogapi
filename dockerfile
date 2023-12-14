@@ -5,10 +5,13 @@ FROM richarvey/nginx-php-fpm:latest
 WORKDIR /var/www/html
 
 # Install dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+	apt-get install -y \
 	libzip-dev \
-	unzip \
-	&& docker-php-ext-install zip pdo_mysql
+	unzip && \
+	docker-php-ext-install zip pdo_mysql && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
 
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -16,8 +19,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Copy the Composer files for better caching
 COPY composer.json composer.lock /var/www/html/
 
-# Install application dependencies
-RUN composer install --no-scripts --no-autoloader
+# Install application dependencies without dev dependencies
+RUN composer install --no-scripts --no-autoloader --no-dev
+
+# Remove unnecessary files
+RUN rm -rf /var/www/html/docker-compose.yml /var/www/html/Dockerfile
 
 # Copy the application files to the container
 COPY . /var/www/html/
@@ -25,6 +31,9 @@ COPY . /var/www/html/
 # Generate the Composer autoloader
 RUN composer dump-autoload --optimize
 
-# Expose port 9000 and start PHP-FPM
-EXPOSE 9000
-CMD ["php-fpm"]
+# CMD directive is not necessary as richarvey/nginx-php-fpm sets it to run php-fpm
+
+# EXPOSE directive is optional as the default Nginx configuration should already expose port 80
+
+# Cleanup development packages
+RUN apt-get purge -y --auto-remove
